@@ -10,5 +10,10 @@ module ZendeskAppsTools
       ZendeskAppsSupport::Package.new(settings.root).readified_js(nil, 0, "http://localhost:#{settings.port}/", settings.parameters)
     end
 
+    get "/spec_helper.js" do
+      content_type 'text/javascript'
+      send_file File.expand_path(File.join(File.dirname(__FILE__), "app_spec_helper.js"))
+    end
+
   end
 end

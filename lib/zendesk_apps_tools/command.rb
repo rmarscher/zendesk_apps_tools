@@ -5,6 +5,8 @@ require 'net/http'
 require 'json'
 require 'faraday'
 require 'io/console'
+require 'rake'
+require 'jasmine'
 
 require 'zendesk_apps_tools/command_helpers'
 
@@ -142,6 +144,31 @@ module ZendeskAppsTools
         say_error_and_exit "App id not found\nPlease try running command with --clean or check your internet connection"
       end
       deploy_app(:put, "/api/v2/apps/#{app_id}.json", {})
+    end
+
+    desc "test", "Test the app"
+    method_options SHARED_OPTIONS
+    def test
+      setup_path(options[:path])
+      load 'jasmine/tasks/jasmine.rake'
+
+      app_server = fork do
+        Signal.trap("HUP") { puts "Exiting app server"; exit }
+        invoke(:server, [])
+      end
+
+      Process.detach(app_server)
+
+      ENV['JASMINE_CONFIG_PATH'] = File.expand_path(File.join(self.class.source_root, 'jasmine.yml'))
+
+      Jasmine.configure do |config|
+        config.src_path = "http://localhost:#{DEFAULT_SERVER_PORT}"
+        config.spec_path = File.join(destination_root, 'spec')
+      end
+
+      Rake::Task['jasmine'].invoke
+
+      Process.kill('HUP', app_server)
     end
 
     protected
