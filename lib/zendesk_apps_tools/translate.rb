@@ -36,22 +36,34 @@ module ZendeskAppsTools
 
     desc 'to_json', 'Convert Zendesk translation yml to I18n formatted json'
     method_option :path, default: './', required: false
+    method_option :overwrite, default: '', required: false
     def to_json
       setup_path(options[:path]) if options[:path]
+      unless File.exists? "#{destination_root}/translations/en.yml"
+        say_error_and_exit "en.yml does not exists in 'translations' directory"
+      end
       en_yml = YAML.load_file("#{destination_root}/translations/en.yml")
       package = /^txt.apps.([^\.]+)/.match(en_yml['parts'][0]['translation']['key'])[1]
       translations = en_yml['parts'].map { |part| part['translation'] }
       en_json = array_to_nested_hash(translations)['txt']['apps'][package]
+      en_json['app'] = {} if en_json['app'].nil?
       en_json['app']['package'] = package
 
-      write_json('translations/en.json', en_json)
+      write_json('translations/en.json', en_json, options[:overwrite])
     end
 
     desc 'update', 'Update translation files from Zendesk'
     method_option :path, default: './', required: false
+    method_option :overwrite, default: '', required: false
     def update(request_builder = Faraday.new)
       setup_path(options[:path]) if options[:path]
-      app_package = get_value_from_stdin('What is the package name for this app? (without app_)', valid_regex: /^[a-z_]+$/, error_msg: 'Invalid package name, try again:')
+      unless File.exists? "#{destination_root}/translations/en.yml"
+        say_error_and_exit "en.yml does not exists in 'translations' directory"
+      end
+
+      en_yml = YAML.load_file("#{destination_root}/translations/en.yml")
+      app_package = /^txt.apps.([^\.]+)/.match(en_yml['parts'][0]['translation']['key'])[1]
+      app_package = get_value_from_stdin('What is the package name for this app? (without app_)', valid_regex: /^[a-z_]+$/, error_msg: 'Invalid package name, try again:') unless app_package
 
       key_prefix = "txt.apps.#{app_package}."
 
@@ -66,8 +78,10 @@ module ZendeskAppsTools
           locale_response = api_request(locale_url, request_builder).body
           translations    = JSON.parse(locale_response)['locale']['translations']
 
-          locale_name = ZendeskAppsTools::LocaleIdentifier.new(locale['locale']).locale_id
-          write_json("#{destination_root}/translations/#{locale_name}.json", nest_translations_hash(translations, key_prefix))
+          unless translations.empty?
+            locale_name = ZendeskAppsTools::LocaleIdentifier.new(locale['locale']).locale_id
+            write_json("#{destination_root}/translations/#{locale_name}.json", nest_translations_hash(translations, key_prefix), options[:overwrite])
+          end
         end
         say('Translations updated', :green)
 
@@ -99,8 +113,16 @@ module ZendeskAppsTools
         @destination_stack << relative_to_original_destination_root(path) unless @destination_stack.last == path
       end
 
-      def write_json(filename, translations_hash)
-        create_file(filename, JSON.pretty_generate(translations_hash) + "\n")
+      def write_json(filename, translations_hash, default_overwrite='')
+        content = (JSON.pretty_generate(translations_hash) + "\n").force_encoding('ASCII-8BIT')
+
+        if default_overwrite == 'a'
+          create_file(filename, content, {:force => true})
+        elsif default_overwrite == 'n'
+          create_file(filename, content, {:skip => true})
+        else
+          create_file(filename, content)
+        end
       end
 
       def nest_translations_hash(translations_hash, key_prefix)
