@@ -22,5 +22,13 @@ module ZendeskAppsTools
         end
       end
     end
+
+    def manifest(path, symbolize_names = true)
+      manifest_path = File.join path, 'manifest.json'
+      return {} unless File.exists? manifest_path
+
+      file = File.read manifest_path
+      JSON.parse file, :symbolize_names => symbolize_names
+    end
   end
 end

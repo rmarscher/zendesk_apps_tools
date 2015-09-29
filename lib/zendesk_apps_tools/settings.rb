@@ -46,7 +46,7 @@ module ZendeskAppsTools
       rescue => err
         puts "Failed to load #{filepath}"
         puts err.message
-        return nil
+        return {}
       end
 
       parameters.inject({}) do |settings, param|
