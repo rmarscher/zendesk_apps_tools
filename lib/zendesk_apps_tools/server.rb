@@ -26,9 +26,9 @@ module ZendeskAppsTools
       content_type 'application/json'
       cors_headers
 
-      manifest_json = manifest File.join(settings.root)
+      manifest_json = manifest settings.root
 
-      parameters = manifest_json[:parameters].map do | parameter |
+      parameters = (manifest_json[:parameters] || []).map do | parameter |
         {
           name: parameter[:name],
           kind: parameter[:type] || 'text',
@@ -38,12 +38,13 @@ module ZendeskAppsTools
         }
       end
 
+      manifest_author = manifest_json[:author] || {}
       {
         id: app_id,
         name: manifest_json[:name] || "Public App",
-        author_name: manifest_json[:author][:name] || "Zendesk",
-        author_email: manifest_json[:author][:email] || "apps@zendesk.com",
-        author_url: manifest_json[:author][:url] || "",
+        author_name: manifest_author[:name] || "Zendesk",
+        author_email: manifest_author[:email] || "apps@zendesk.com",
+        author_url: manifest_author[:url] || "",
         small_icon: "http://localhost:#{settings.port}/#{app_id}/logo-small.png",
         large_icon: "http://localhost:#{settings.port}/#{app_id}/logo.png",
         framework_version: manifest_json[:frameworkVersion] || "1.0",
@@ -56,49 +57,56 @@ module ZendeskAppsTools
       content_type 'application/json'
       cors_headers
 
-      manifest_json = manifest File.join(settings.root)
+      manifest_json = manifest settings.root
 
-      unless File.exists?(settings.config)
-        File.open("settings.yml", 'w') {|f| f.write("---\n") }
+      if File.exists? settings.config
+        settings_helper = ZendeskAppsTools::Settings.new
+        app_settings = settings_helper.get_settings_from_file(settings.config, settings.manifest)
+      else
+        app_settings = settings.parameters
       end
-
-      settings_helper = ZendeskAppsTools::Settings.new
-      s = settings_helper.get_settings_from_file(settings.config, settings.manifest) || {}
 
       {
         id: install_id,
         app_id: install_id,
         settings: {
           title: manifest_json[:name] || "Public App"
-        }.merge(s)
+        }.merge(app_settings)
       }.to_json
     end
 
     put "/api/v2/apps/installations/:install_id.json" do |install_id|
       content_type 'application/json'
       cors_headers
-      data = JSON.parse request.body.read
+      begin
+        data = JSON.parse request.body.read
+      rescue => err
+        puts "Error parsing reqeust JSON body: #{err.message}"
+        return 500
+      end
 
-      manifest_json = manifest File.join(settings.root)
+      manifest_json = manifest settings.root
 
       if File.exists?(settings.config)
         settings_helper = ZendeskAppsTools::Settings.new
-        s = settings_helper.get_settings_from_file(settings.config, settings.manifest) || {}
+        app_settings = settings_helper.get_settings_from_file(settings.config, settings.manifest)
       else
-        s = {}
+        app_settings = settings.parameters
       end
 
-      File.open("settings.yml", 'w') {|f| f.write(YAML.dump(s.merge(data))) }
+      app_settings_string = settings.config =~ /\.json$/ ? JSON.generate(app_settings.merge(data)) : YAML.dump(app_settings.merge(data))
+
+      File.open(settings.config, 'w') {|f| f.write(app_settings_string) }
 
       settings_helper = ZendeskAppsTools::Settings.new
-      s = settings_helper.get_settings_from_file(settings.config, settings.manifest) || {}
+      app_settings = settings_helper.get_settings_from_file(settings.config, settings.manifest)
 
       {
         id: install_id,
         app_id: install_id,
         settings: {
           title: manifest_json[:name] || "Public App"
-        }.merge(s)
+        }.merge(app_settings)
       }.to_json
     end
 
