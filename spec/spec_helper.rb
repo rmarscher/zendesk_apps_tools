@@ -5,12 +5,19 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
+require 'rack/test'
 require 'webmock/rspec'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib')
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib/zendesk_apps_tools')
 
+module RSpecMixin
+  include Rack::Test::Methods
+  def app() described_class end
+end
+
 RSpec.configure do |config|
+  config.include RSpecMixin
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
 

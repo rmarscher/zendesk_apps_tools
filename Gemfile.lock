@@ -50,6 +50,8 @@ GEM
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
+    rack-test (0.6.3)
+      rack (>= 1.0)
     rake (10.4.2)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
@@ -91,6 +93,7 @@ DEPENDENCIES
   aruba
   bump
   cucumber
+  rack-test
   rspec
   webmock
   zendesk_apps_tools!
