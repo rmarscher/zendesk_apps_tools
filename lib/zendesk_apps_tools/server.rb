@@ -70,7 +70,7 @@ module ZendeskAppsTools
         id: install_id,
         app_id: install_id,
         settings: {
-          title: manifest_json[:name] || "Public App"
+          'title' => manifest_json[:name] || "Public App"
         }.merge(app_settings)
       }.to_json
     end
@@ -105,7 +105,7 @@ module ZendeskAppsTools
         id: install_id,
         app_id: install_id,
         settings: {
-          title: manifest_json[:name] || "Public App"
+          'title' => manifest_json[:name] || "Public App"
         }.merge(app_settings)
       }.to_json
     end
