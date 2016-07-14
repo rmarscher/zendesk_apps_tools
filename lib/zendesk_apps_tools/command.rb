@@ -133,10 +133,11 @@ module ZendeskAppsTools
       require 'zendesk_apps_tools/settings'
       settings_helper = ZendeskAppsTools::Settings.new(self)
 
-      settings = settings_helper.get_settings_from_file options[:config], manifest.original_parameters
+      parameters = manifest.original_parameters.reject { |p| p['secure'] }
+      settings = settings_helper.get_settings_from_file options[:config], parameters
 
       unless settings
-        settings = settings_helper.get_settings_from_user_input manifest.original_parameters
+        settings = settings_helper.get_settings_from_user_input parameters
       end
 
       require 'zendesk_apps_tools/server'
