@@ -1,4 +1,16 @@
 PATH
+  remote: ../zendesk_apps_support
+  specs:
+    zendesk_apps_support (4.2.0)
+      erubis
+      i18n
+      image_size
+      jshintrb (~> 0.3.0)
+      json
+      sass
+      sassc (~> 1.11.2)
+
+PATH
   remote: .
   specs:
     zendesk_apps_tools (2.2.1)
@@ -7,7 +19,7 @@ PATH
       sinatra (~> 1.4.6)
       sinatra-cross_origin (~> 0.3.1)
       thor (~> 0.19.4)
-      zendesk_apps_support (~> 4.0.0)
+      zendesk_apps_support (~> 4.2.0)
 
 GEM
   remote: https://rubygems.org/
@@ -101,14 +113,6 @@ GEM
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
       hashdiff
-    zendesk_apps_support (4.0.0)
-      erubis
-      i18n
-      image_size
-      jshintrb (~> 0.3.0)
-      json
-      sass
-      sassc (~> 1.11.2)
 
 PLATFORMS
   ruby
@@ -120,6 +124,7 @@ DEPENDENCIES
   cucumber
   rspec
   webmock
+  zendesk_apps_support!
   zendesk_apps_tools!
 
 BUNDLED WITH

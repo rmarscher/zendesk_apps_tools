@@ -112,6 +112,32 @@ module ZendeskAppsTools
       true
     end
 
+    desc 'migrate', 'Helper for migrating apps from framework v1 to v2'
+    method_option :'replace-v1', type: :boolean,
+                                 default: false,
+                                 aliases: ['-r'],
+                                 desc: 'Move the original files to a subdirectory' \
+                                       ' and store output in source directory'
+    shared_options
+    def migrate
+        return false unless validate
+
+        setup_path(options[:path])
+
+        require 'execjs'
+        # begin
+          ExecJS.eval "app_migrator migrate --path=#{options[:path]}"
+        # rescue ExecJS::RuntimeError => e
+        #   error = "There was an error trying to run the app migrator.\n #{e}\n"
+        #   if ExecJS.runtime.nil?
+        #     error += 'Validation relies on a JavaScript runtime. See https://github.com/rails/execjs for a list of available runtimes.'
+        #   elsif ExecJS.runtime.name == 'JScript'
+        #     error += 'To validate on Windows, please install node from https://nodejs.org/'
+        #   end
+        #   say_error_and_exit error
+        # end
+    end
+
     desc 'clean', 'Remove app packages in temp folder'
     method_option :path, default: './', required: false, aliases: '-p'
     def clean
