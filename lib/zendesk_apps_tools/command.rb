@@ -203,7 +203,7 @@ module ZendeskAppsTools
     end
 
     def product_codes(manifest)
-      manifest.location_options.collect{ |option| option.location.product_code }
+      manifest.location_options.collect{ |option| option.location.product_code }.uniq
     end
 
     def setup_path(path)

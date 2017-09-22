@@ -92,6 +92,16 @@ describe ZendeskAppsTools::Command do
     end
   end
 
+  describe '#product_codes' do
+    subject { @command.send(:product_codes, two_locations_manifest) }
+    let(:two_locations_manifest) {
+      ZendeskAppsSupport::Manifest.new(IO.read('./spec/fixture/two_locations_manifest.json'))
+    }
+    it 'returns unique product codes' do
+      expect(subject.count).to eq(1)
+    end
+  end
+
   describe '#update' do
     context 'when app id is in cache' do
       it 'uploads a file and puts build api' do
