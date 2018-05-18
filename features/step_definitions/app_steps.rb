@@ -31,6 +31,15 @@ Given /^a(n|(?: v1)) app is created in directory "(.*?)"$/ do |version, app_dir|
     )
 end
 
+Given /^\.md files in "(.*?)"/ do |translations_dir|
+  f = File.new(File.join(translations_dir, 'installation_instructions.md'), 'w')
+  f.write('# Instructions \n _cool markdown_ \n\n [markdown is](very cool)')
+  f.close
+  f = File.new(File.join(translations_dir, 'long_description.md'), 'w')
+  f.write('# Description \n What a good app')
+  f.close
+end
+
 Given /^a \.zat file in "(.*?)"/ do |app_dir|
   f = File.new(File.join(app_dir, '.zat'), 'w')
   f.write(JSON.dump(username: 'test@user.com', password: 'hunter2', subdomain: 'app-account'))
