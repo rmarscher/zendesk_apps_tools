@@ -118,6 +118,36 @@ module ZendeskAppsTools
       true
     end
 
+    desc 'merge_markdown', 'Merge .md marketplace content files into en.json'
+    method_option :overwrite, required: false, aliases: '-o'
+    def merge_markdown 
+      if Dir["#{app_dir}/translations/en.json"].empty?
+        say_status 'merge_markdown', "Please create a translations/en.json first", :red
+        return false
+      end
+      
+      translation_files = Dir["#{app_dir}/translations/{long_description,installation_instructions}.md"]
+      en_json = JSON.parse(File.read("#{app_dir}/translations/en.json"))
+
+      translation_files.each do |file_name|
+        translation_key = File.basename(file_name, '.md')
+        say_status 'merge_markdown', "Reading #{translation_key}.md"
+        unless en_json['app'][translation_key].to_s.empty?
+          if options[:overwrite]
+            say_status 'merge_markdown', "Overwriting the current value of #{translation_key} in en.json", :yellow
+          else
+            say_status 'merge_markdown', "You already have a value for #{translation_key} in en.json. Please remove it or use the -o flag", :red
+            return false
+          end
+        end
+        en_json['app'][translation_key] = File.read(file_name)
+      end
+
+      say_status 'merge_markdown', "Writing to en.json"
+      File.write("#{app_dir}/translations/en.json", en_json.to_json)
+      true
+    end
+
     desc 'clean', 'Remove app packages in temp folder'
     method_option :path, default: './', required: false, aliases: '-p'
     def clean
