@@ -10,6 +10,10 @@ module ZendeskAppsTools
     set :protection, except: :frame_options
     ZENDESK_DOMAINS_REGEX = %r{^http(?:s)?://[a-z0-9-]+\.(?:zendesk|zopim|zd-(?:dev|master|staging))\.com$}
 
+    configure do
+      mime_type :wasm, 'application/wasm'
+    end
+
     get '/app.js' do
       serve_installed_js
     end
@@ -54,6 +58,10 @@ module ZendeskAppsTools
       if request.env['PATH_INFO'] == '/app.js' && params.key?('locale') && params.key?('subdomain')
         serve_installed_js
       else
+        puts "hello world !!!!!!!" + request.env['PATH_INFO']
+        # if request.env['PATH_INFO'].contains?(".wasm")
+        #   headers 'Content-Type' => 'application/fuzzy-bunny'
+        # end
         access_control_allow_origin
         super(*args)
       end
