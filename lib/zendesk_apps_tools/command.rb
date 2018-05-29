@@ -316,14 +316,15 @@ module ZendeskAppsTools
         say_status 'info', 'Checking for new version of zendesk_apps_tools'
         response = Net::HTTP.get_response(URI('https://rubygems.org/api/v1/gems/zendesk_apps_tools.json'))
 
-        latest_version = Gem::Version.new(JSON.parse(response.body)["version"])
+        latest_version = Gem::Version.new(JSON.parse(response.body).fetch('version'))
+
         current_version = Gem::Version.new(ZendeskAppsTools::VERSION)
 
         cache.save 'zat_latest' => latest_version
         cache.save 'zat_update_check' => Date.today
 
         say_status 'warning', 'Your version of Zendesk Apps Tools is outdated. Update by running: gem update zendesk_apps_tools', :yellow if current_version < latest_version
-      rescue SocketError
+      rescue SocketError, KeyError
         say_status 'warning', 'Unable to check for new versions of zendesk_apps_tools gem', :yellow
       end
     end
