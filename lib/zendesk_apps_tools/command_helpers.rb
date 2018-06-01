@@ -25,7 +25,8 @@ module ZendeskAppsTools
     end
 
     def setup_path(path)
-      @destination_stack << relative_to_original_destination_root(path) unless @destination_stack.last == path
+      @destination_stack << relative_to_original_destination_root(path) unless @destination_stack.include?(path)
+    end
 
     def zip(app_package, archive_path)
       require 'zip'
