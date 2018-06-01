@@ -71,6 +71,7 @@ module ZendeskAppsTools
       check_for_update
       setup_path(options[:path])
       begin
+        app_package ||= ZendeskAppsSupport::Package.new(app_dir.to_s)
         errors = app_package.validate(marketplace: false)
       rescue ExecJS::RuntimeError
         error = "There was an error trying to validate this app.\n"
@@ -105,6 +106,7 @@ module ZendeskAppsTools
       return false unless validate
 
       setup_path(options[:path])
+      app_package ||= ZendeskAppsSupport::Package.new(app_dir.to_s)
 
       say_status 'warning', 'Please note that the name key of manifest.json is currently only used in development.', :yellow if app_package.manifest.name
 
@@ -112,7 +114,7 @@ module ZendeskAppsTools
 
       archive_rel_path = relative_to_original_destination_root(archive_path)
 
-      zip archive_path
+      zip app_package, archive_path
 
       say_status 'package', "created at #{archive_rel_path}"
       true
@@ -122,7 +124,7 @@ module ZendeskAppsTools
     method_option :path, default: './', required: false, aliases: '-p'
     def clean
       require 'fileutils'
-      
+
       setup_path(options[:path])
 
       return unless File.exist?(Pathname.new(File.join(app_dir, 'tmp')).to_s)
