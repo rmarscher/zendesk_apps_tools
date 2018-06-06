@@ -40,7 +40,7 @@ module ZendeskAppsTools
       app_js = package.compile(
         app_id: settings.app_id,
         app_name: app_name,
-        assets_dir: "http://localhost:#{settings.port}/",
+        assets_dir: settings.assets_dir,
         locale: params['locale']
       )
 

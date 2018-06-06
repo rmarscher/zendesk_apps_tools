@@ -12,6 +12,7 @@ module ZendeskAppsTools
 
     map %w[-v] => :version
     DEFAULT_SERVER_PORT = '4567'
+    DEFAULT_ASSETS_DIR = nil
 
     source_root File.expand_path(File.join(File.dirname(__FILE__), '../..'))
 
@@ -138,6 +139,7 @@ module ZendeskAppsTools
     shared_options(except: [:clean])
     method_option :config, default: DEFAULT_CONFIG_PATH, required: false, aliases: '-c'
     method_option :port, default: DEFAULT_SERVER_PORT, required: false, desc: 'Port for the http server to use.'
+    method_option :assets_dir, default: DEFAULT_ASSETS_DIR, required: false, desc: 'Override the assets_dir which is the asset url prefix used to serve the app.'
     method_option :app_id, default: DEFAULT_APP_ID, required: false, type: :numeric
     method_option :bind, required: false
     def server
@@ -151,6 +153,11 @@ module ZendeskAppsTools
         server.set :settings_helper, settings_helper
         server.set :bind, options[:bind] if options[:bind]
         server.set :port, options[:port]
+        if options[:assets_dir] == DEFAULT_ASSETS_DIR
+          server.set :assets_dir, "http://localhost:#{options[:port]}"
+        else
+          server.set :assets_dir, options[:assets_dir]
+        end
         server.set :root, options[:path]
         server.set :public_folder, File.join(options[:path], 'assets')
         server.set :parameters, settings
